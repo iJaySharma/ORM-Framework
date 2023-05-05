@@ -1,8 +1,7 @@
-package Annotation;
+package com.thinking.machines.orm.annotation;
 import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Column
+public @interface PrimaryKey
 {
-public String name();
 }

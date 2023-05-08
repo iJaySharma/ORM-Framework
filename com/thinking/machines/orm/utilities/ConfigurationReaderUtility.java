@@ -16,7 +16,7 @@ ConfigurationWrapper configurationWrapper=null;
 String pathToConfiguration="";
 try
 {
-pathToConfiguration="c:\\ormFramework\\conf.json";
+pathToConfiguration="c:\\ORM\\conf.json";
 gson=new Gson();
 file=new File(pathToConfiguration);
 if(file.exists()==false) throw new ORMException("Conf.json missing or is been replaced");

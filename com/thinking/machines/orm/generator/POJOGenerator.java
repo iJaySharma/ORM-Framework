@@ -1,7 +1,7 @@
 package com.thinking.machines.orm.generator;
 import com.thinking.machines.orm.wrapper.*;
 import com.thinking.machines.orm.utilities.*;
-import com.thinking.machines.orm.exceptions.*;
+import com.thinking.machines.orm.exception.*;
 import com.google.gson.*;
 import java.util.*;
 import java.io.*;
@@ -37,6 +37,7 @@ try
 connection=ConnectionUtility.getConnection();
 }catch(Exception exception)
 {
+exception.printStackTrace();
 throw new ORMException("Problem while establishing connection");
 }
 try
@@ -194,7 +195,8 @@ filteredColumnName=columnName.toLowerCase();
 }
 String filteredColumnDataType="";
 String columnDataType=column.getDataType();
-if(columnDataType.equalsIgnoreCase("int")) filteredColumnDataType="Integer";
+if(columnDataType==null)filteredColumnDataType=null;
+else if(columnDataType.equalsIgnoreCase("int")) filteredColumnDataType="Integer";
 else if(columnDataType.equalsIgnoreCase("bigdecimal")) filteredColumnDataType="java.math.BigDecimal";
 else if(columnDataType.equalsIgnoreCase("char") || columnDataType.equalsIgnoreCase("varchar")) filteredColumnDataType="String";
 else if(columnDataType.equalsIgnoreCase("long")) filteredColumnDataType="Long";
@@ -328,4 +330,10 @@ throw new ORMException("Problem while creating POJO file");
 }
 }//end of for
 }//end of function
+public static void main(String[] arg) throws ORMException
+{
+POJOGenerator pojos = new POJOGenerator();
+pojos.populate();
+pojos.display();
+}
 }//end of class

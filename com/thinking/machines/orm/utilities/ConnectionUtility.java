@@ -16,6 +16,7 @@ connection=DriverManager.getConnection(configurationWrapper.getConnectionUrl().t
 if(connection==null) throw new ORMException("Can't establish connection with specified details");
 }catch(Exception exception)
 {
+    exception.printStackTrace();
 throw new ORMException("Can't establish connection with specified details");
 }
 return connection;

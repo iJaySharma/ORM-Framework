@@ -1,4 +1,5 @@
-import com.thinking.machines.orm.annotations.*;
+package dto;
+import com.thinking.machines.orm.annotation.*;
 @Table(name="company_new")
 public class Companynew
 {

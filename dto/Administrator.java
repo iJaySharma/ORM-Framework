@@ -1,4 +1,5 @@
-import com.thinking.machines.orm.annotations.*;
+package dto;
+import com.thinking.machines.orm.annotation.*;
 @Table(name="administrator")
 public class Administrator
 {

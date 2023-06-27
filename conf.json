@@ -3,5 +3,5 @@
 "connectionUrl":"jdbc:mysql://localhost:3306/tmdb",
 "username":"tmdbuser",
 "password":"tmdbuser",
-"path":"c:\\ORM\\DTOs"
+"path":"c:\\ORM\\dto"
 }

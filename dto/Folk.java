@@ -1,24 +1,16 @@
 package dto;import com.thinking.machines.orm.annotation.*;
-@Table(name="student")
-public class Student
+@Table(name="folk")
+public class Folk
 {
-@PrimaryKey(name="rollnumber")
-@Column(name="rollnumber")
-private Integer rollnumber;
 @Column(name="name")
 private String name;
 @Column(name="age")
 private Integer age;
-public Student()
+@ForeignKey(parent="course",column="id")
+@Column(name="course_id")
+private Integer courseId;
+public Folk()
 {
-}
-public void  setRollnumber(Integer rollnumber)
-{
-this.rollnumber=rollnumber;
-}
-public Integer getRollnumber()
-{
-return this.rollnumber;
 }
 public void  setName(String name)
 {
@@ -35,5 +27,13 @@ this.age=age;
 public Integer getAge()
 {
 return this.age;
+}
+public void  setCourseId(Integer courseId)
+{
+this.courseId=courseId;
+}
+public Integer getCourseId()
+{
+return this.courseId;
 }
 }

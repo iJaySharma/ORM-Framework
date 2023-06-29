@@ -101,6 +101,89 @@ exception.printStackTrace();
 return 0;
 }// end of save function
 
+public void delete(Object object) throws ORMException
+{
+entity=entityManager.loadEntity(object,OperationType.DELETE);
+deleteWrapper=entity.getDeleteWrapper();
+List<ForeignKeyWrapper> foreignKeys=deleteWrapper.getForeignKeys();
+Map<Class,Method> psMap=deleteWrapper.getPreparedStatementSetterMethods();
+StringBuffer selectStatement=new StringBuffer();
+Object primaryKeyFieldValue=null;
+Field primaryKeyField=null;
+Method getterMethodForPrimaryKeyField=null;
+try
+{
+for(Pair<Field,Method> pair:deleteWrapper.getPOJOGetterMethods())
+{
+Annotation [] fieldLevelAnnotations=pair.getKey().getDeclaredAnnotations();
+for(Annotation fieldLevelAnnotation:fieldLevelAnnotations)
+{
+if(fieldLevelAnnotation instanceof PrimaryKey)
+{
+PrimaryKey primaryKey=(PrimaryKey) fieldLevelAnnotation;
+primaryKeyField=pair.getKey();
+getterMethodForPrimaryKeyField=pair.getValue();
+break;
+}
+}//end of for...
+}//end of for...
+primaryKeyFieldValue=getterMethodForPrimaryKeyField.invoke(object);
+if(primaryKeyFieldValue==null)
+{
+throw new ORMException("Invalid primary key field value : "+primaryKeyFieldValue+" for field : "+primaryKeyField.getName()+" on class : "+object.getClass().getName());
+}
+if(foreignKeys.size()>0)
+{
+for(ForeignKeyWrapper foreignKey:foreignKeys)
+{
+selectStatement.append("select ");
+selectStatement.append(foreignKey.getChildTableColumnName());
+selectStatement.append(" from ");
+selectStatement.append(foreignKey.getChildTableName());
+selectStatement.append(" where ");
+selectStatement.append(foreignKey.getChildTableColumnName());
+selectStatement.append("=?");
+preparedStatement=connection.prepareStatement(selectStatement.toString());
+psMap.get(primaryKeyField.getType()).invoke(preparedStatement,1,primaryKeyFieldValue);
+resultSet=preparedStatement.executeQuery();
+if(resultSet.next())
+{
+throw new ORMException("Can't delete record with field : "+primaryKeyField.getName()+" , having dependency in child table : "+foreignKey.getChildTableName());
+}
+resultSet.close();
+preparedStatement.close();
+selectStatement.delete(0,selectStatement.length());
+}//end of for....
+}//end of if...
+//code to delete the record starts here....
+String parentTableName="";
+Annotation [] classLevelAnnotations=object.getClass().getDeclaredAnnotations();
+for(Annotation classLevelAnnotation: classLevelAnnotations)
+{
+if(classLevelAnnotation instanceof Table)
+{
+Table table=(Table) classLevelAnnotation;
+parentTableName=table.name();
+}
+}
+StringBuffer deleteSQLStatement=new StringBuffer();
+deleteSQLStatement.append("delete from ");
+deleteSQLStatement.append(parentTableName);
+deleteSQLStatement.append(" where ");
+deleteSQLStatement.append(primaryKeyField.getName());
+deleteSQLStatement.append("=?");
+preparedStatement=connection.prepareStatement(deleteSQLStatement.toString());
+psMap.get(primaryKeyField.getType()).invoke(preparedStatement,1,primaryKeyFieldValue);
+preparedStatement.executeUpdate();
+deleteSQLStatement.delete(0,deleteSQLStatement.length());
+preparedStatement.close();
+//code to delete the record ends here....
+}catch(Exception exception)
+{
+exception.printStackTrace();
+}
+}//function ends here...
+
 public void update(Object object) throws ORMException
 {
 entity=entityManager.loadEntity(object,OperationType.UPDATE);

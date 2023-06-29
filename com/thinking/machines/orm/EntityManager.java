@@ -1,9 +1,10 @@
 package com.thinking.machines.orm;
 import com.thinking.machines.orm.wrapper.*;
+import com.thinking.machines.orm.annotation.*;
 import com.thinking.machines.orm.exception.*;
 import java.util.*;
 import javafx.util.*;	//for pair
-import java.lang.*;
+import java.lang.annotation.*;
 import java.lang.reflect.*;
 import java.sql.*;
 public class EntityManager
@@ -43,8 +44,14 @@ else if(operationType.equals(operationType.UPDATE))
 UpdateWrapper updateWrapper=getUpdateWrapper(object);
 entity.setUpdateWrapper(updateWrapper);
 }
+else if(operationType.equals(operationType.DELETE))
+{
+DeleteWrapper deleteWrapper=getDeleteWrapper(object);
+entity.setDeleteWrapper(deleteWrapper);
+}
 }catch(Exception exception)
 {
+exception.printStackTrace();
 }
 return entity;
 }
@@ -153,6 +160,61 @@ updateWrapper.setPrimaryKeyColumns(primaryKeyColumns);
 updateWrapper.setPrimaryKeyColumnsCount(primaryKeyColumnsCount);
 return updateWrapper;
 }//end of getUpdateWrapper() function
+
+public DeleteWrapper getDeleteWrapper(Object object) throws ORMException
+{
+DeleteWrapper deleteWrapper=new DeleteWrapper();
+//fetching table name from Table annotation...
+Class c=object.getClass();
+Annotation [] classLevelAnnotations=c.getDeclaredAnnotations();
+if(classLevelAnnotations.length>0)
+{
+for(Annotation classLevelAnnotation:classLevelAnnotations)
+{
+if(classLevelAnnotation instanceof Table)
+{
+Table table=(Table) classLevelAnnotation;
+deleteWrapper.setTableName(table.name());
+break;
+}
+}
+}
+//fetching details of all the child tables associated with parent table using some constraint...
+List<ForeignKeyWrapper> foreignKeys=null;
+try
+{
+databaseMetaData=connection.getMetaData();
+String tableNames[]={"TABLE"};
+resultSet=databaseMetaData.getTables(null,null,"%",tableNames);
+while(resultSet.next())
+{
+//fetch table information on every iteration
+String tableName=resultSet.getString("TABLE_NAME");
+if(tableName.equalsIgnoreCase(object.getClass().getSimpleName())==false) continue;
+String query="select table_name,column_name,constraint_name,referenced_table_name,referenced_column_name from information_schema.key_column_usage where referenced_table_name=?";
+preparedStatement=connection.prepareStatement(query);
+preparedStatement.setString(1,tableName);
+ResultSet informationResultSet=preparedStatement.executeQuery();
+foreignKeys=new LinkedList<>();
+while(informationResultSet.next())
+{
+ForeignKeyWrapper foreignKeyWrapper=new ForeignKeyWrapper();
+foreignKeyWrapper.setParentTableName(informationResultSet.getString("REFERENCED_TABLE_NAME"));
+foreignKeyWrapper.setParentTableColumnName(informationResultSet.getString("REFERENCED_COLUMN_NAME"));
+foreignKeyWrapper.setChildTableName(informationResultSet.getString("TABLE_NAME"));
+foreignKeyWrapper.setChildTableColumnName(informationResultSet.getString("COLUMN_NAME"));
+foreignKeys.add(foreignKeyWrapper);
+}
+}
+}catch(Exception exception)
+{
+exception.printStackTrace();
+}
+deleteWrapper.setPOJOGetterMethods(pojoGetterMethods);
+deleteWrapper.setPreparedStatementSetterMethods(preparedStatementSetterMethods);
+deleteWrapper.setForeignKeys(foreignKeys);
+return deleteWrapper;
+}//end of function
 
 private void prepareDataStructures(Object object) throws ORMException
 {

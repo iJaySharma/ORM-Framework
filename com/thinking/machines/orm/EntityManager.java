@@ -38,6 +38,11 @@ if(operationType.equals(operationType.INSERT))
 InsertWrapper insertWrapper=getInsertWrapper(object);
 entity.setInsertWrapper(insertWrapper);
 }
+else if(operationType.equals(operationType.UPDATE))
+{
+UpdateWrapper updateWrapper=getUpdateWrapper(object);
+entity.setUpdateWrapper(updateWrapper);
+}
 }catch(Exception exception)
 {
 }
@@ -79,6 +84,75 @@ insertWrapper.setPOJOGetterMethods(pojoGetterMethods);
 insertWrapper.setColumns(columns);
 return insertWrapper;
 }//end of function
+
+public UpdateWrapper getUpdateWrapper(Object object) throws ORMException
+{
+UpdateWrapper updateWrapper=new UpdateWrapper();
+List<ColumnWrapper> columns=new LinkedList<>();
+List<ColumnWrapper> primaryKeyColumns=new LinkedList<>();
+String tableName="";
+Integer primaryKeyColumnsCount=0;
+try
+{
+databaseMetaData=connection.getMetaData();
+String tableNames[]={"TABLE"};
+resultSet=databaseMetaData.getTables(null,null,"%",tableNames);
+while(resultSet.next())
+{
+//fetch table information on every iteration
+tableName=resultSet.getString("TABLE_NAME");
+if(tableName.equalsIgnoreCase(object.getClass().getSimpleName())==false) continue;
+
+//extracting column names
+ResultSet columnsInformation=databaseMetaData.getColumns(null,null,tableName,null);
+while(columnsInformation.next())
+{
+String columnName=columnsInformation.getString("COLUMN_NAME").toLowerCase();
+columnWrapper=new ColumnWrapper();
+columnWrapper.setName(columnName);
+columns.add(columnWrapper);
+}//loop to extract columnsInformation ends here...
+
+//extracting primary keys
+ResultSet primaryKeysInformation=databaseMetaData.getPrimaryKeys(null,null,tableName);
+for(int index=0;primaryKeysInformation.next();index++)
+{
+columnWrapper=new ColumnWrapper();
+String columnName=primaryKeysInformation.getString("COLUMN_NAME");
+String primaryKeyName=primaryKeysInformation.getString("PK_NAME");
+if(primaryKeyName.equalsIgnoreCase("primary")) columnWrapper.setIsPrimaryKey(true);
+else columnWrapper.setIsPrimaryKey(false);
+columnWrapper.setName(columnName);
+primaryKeyColumns.add(columnWrapper);
+}//loop to extract primary keys ends here...
+primaryKeysInformation.close();
+break;
+}//outer while ends here
+primaryKeyColumnsCount=primaryKeyColumns.size();
+int columnNumber=0;
+for(int index=0;index<columns.size();index++)
+{
+if(columnNumber>=primaryKeyColumns.size()) break;
+if(columns.get(index).getName().equals(primaryKeyColumns.get(columnNumber).getName()))
+{
+columns.get(index).setIsPrimaryKey(true);
+columnNumber++;
+continue;
+}
+columns.get(index).setIsPrimaryKey(false);
+}
+}catch(Exception exception)
+{
+exception.printStackTrace();
+}
+updateWrapper.setTableName(tableName);
+updateWrapper.setPOJOGetterMethods(pojoGetterMethods);
+updateWrapper.setPreparedStatementSetterMethods(preparedStatementSetterMethods);
+updateWrapper.setColumns(columns);
+updateWrapper.setPrimaryKeyColumns(primaryKeyColumns);
+updateWrapper.setPrimaryKeyColumnsCount(primaryKeyColumnsCount);
+return updateWrapper;
+}//end of getUpdateWrapper() function
 
 private void prepareDataStructures(Object object) throws ORMException
 {

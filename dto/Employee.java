@@ -1,3 +1,4 @@
+package dto;
 import com.thinking.machines.orm.annotation.*;
 @Table(name="employee")
 public class Employee

@@ -49,15 +49,40 @@ else if(operationType.equals(operationType.DELETE))
 DeleteWrapper deleteWrapper=getDeleteWrapper(object);
 entity.setDeleteWrapper(deleteWrapper);
 }
+else if(operationType.equals(operationType.SELECT))
+{
+SelectWrapper selectWrapper=getSelectWrapper(object);
+entity.setSelectWrapper(selectWrapper);
+}
 }catch(Exception exception)
 {
 exception.printStackTrace();
 }
 return entity;
 }
-
-
-
+public SelectWrapper getSelectWrapper(Object object) throws ORMException
+{
+SelectWrapper selectWrapper=new SelectWrapper();
+Class c=object.getClass();
+Annotation [] classLevelAnnotations=c.getDeclaredAnnotations();
+if(classLevelAnnotations.length>0)
+{
+for(Annotation classLevelAnnotation:classLevelAnnotations)
+{
+if(classLevelAnnotation instanceof Table)
+{
+Table table=(Table) classLevelAnnotation;
+selectWrapper.setTableName(table.name());
+break;
+}
+}
+}
+selectWrapper.setPOJOGetterMethods(pojoGetterMethods);
+selectWrapper.setPreparedStatementSetterMethods(preparedStatementSetterMethods);
+selectWrapper.setPOJOSetterMethods(pojoSetterMethods);
+selectWrapper.setResultSetGetterMethods(resultSetGetterMethods);
+return selectWrapper;
+}//end of function
 public InsertWrapper getInsertWrapper(Object object) throws ORMException
 {
 InsertWrapper insertWrapper=new InsertWrapper();

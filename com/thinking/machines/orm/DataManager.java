@@ -5,12 +5,14 @@ import com.thinking.machines.orm.utilities.*;
 import com.thinking.machines.orm.generator.*;
 import com.thinking.machines.orm.annotation.*;
 import com.thinking.machines.orm.validator.*;
+import com.thinking.machines.orm.query.*;
 import java.sql.*;
 import java.util.*;
 import javafx.util.*;	//for pair
 import java.lang.*;
 import java.lang.reflect.*;
 import java.lang.annotation.*;
+import java.sql.Date;
 public class DataManager
 {
 private Connection connection;
@@ -43,6 +45,19 @@ connection.setAutoCommit(false);
 throw new ORMException(sqlException.getMessage());
 }
 }
+public <T> Select<T> select(Object object) throws ORMException
+{
+if(connection==null) throw new ORMException("Call to begin is missing");
+try
+{
+entity=entityManager.loadEntity(object,OperationType.SELECT);
+Select<T> selectClass=new Select<T>(connection,entity);
+return selectClass;
+}catch(Exception exception)
+{
+throw exception;
+}
+}//end of function
 public Integer save(Object object) throws ORMException
 {
 entity=entityManager.loadEntity(object,OperationType.INSERT);
@@ -82,14 +97,22 @@ throw new ORMException(validator.getExceptions());
 }
 Object psObject=connection.prepareStatement(insertWrapper.getSQLStatement());
 Class psClass=Class.forName(psObject.getClass().getName());
-int psIndex=0;
+int psIndex=1;
 for(int i=0;i<pojoGetterMethods.size();i++)
 {
 Field field=pojoGetterMethods.get(i).getKey();
 if(ignoredFields.containsKey(field.getName())) continue;
 Method pojoGetterMethod=pojoGetterMethods.get(i).getValue();
 Method psSetterMethod=psMap.get(field.getType());
-psSetterMethod.invoke(psObject,psIndex+1,pojoGetterMethod.invoke(object));
+
+if (field.getType() == java.sql.Date.class) {
+    psSetterMethod.invoke(psObject, psIndex, (java.sql.Date) (pojoGetterMethod.invoke(object)));   
+} else {
+    psSetterMethod.invoke(psObject, psIndex, pojoGetterMethod.invoke(object));
+}
+System.out.println("psIndex: " + psIndex);
+    System.out.println("Value to set: " + pojoGetterMethod.invoke(object));
+     System.out.println("Setter method parameter types: " + Arrays.toString(psSetterMethod.getParameterTypes()));
 psIndex++;
 }
 Method executeUpdateMethod=psClass.getMethod("executeUpdate");
@@ -216,7 +239,7 @@ throw new ORMException(validator.getExceptions());
 //check for primary key & foreign key starts here...
 validateKeysForUpdate(object);
 generateUpdateSQLStatement(object,updateWrapper);
-
+System.out.print("test-1");
 //code to update record in db table starts here...
 Object psObject=connection.prepareStatement(updateWrapper.getUpdateSQLStatement());
 Class psClass=Class.forName(psObject.getClass().getName());

@@ -6,4 +6,8 @@
 ## Setup
 * Install [Latest JDK](https://www.oracle.com/in/java/technologies/javase-downloads.html)
 * install [MYSQL Version 8](https://www.onlinetutorialspoint.com/mysql/install-mysql-on-windows-10-step-by-step.html)
-* 
+* Download My-Sql-Connector jar and Gson jar file and placed it inside lib folder inside project directory
+* include ORM jar file in class path of java command during compilation and execution of java file of working directory
+* Create the Conf.json file in current ORM Directory and give Json based information of SQL DataBase along with path where to place generated Pojo Entity classes
+
+ ## Features 

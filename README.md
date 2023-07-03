@@ -5,5 +5,5 @@
 
 ## Setup
 * Install [Latest JDK](https://www.oracle.com/in/java/technologies/javase-downloads.html)
-* install MYSQL Version 8
+* install [MYSQL Version 8](https://www.onlinetutorialspoint.com/mysql/install-mysql-on-windows-10-step-by-step.html)
 * 

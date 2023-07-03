@@ -11,8 +11,8 @@
 * Create the Conf.json file in current ORM Directory and give Json based information of SQL DataBase along with path where to place generated Pojo Entity classes
 
  ## Features 
-POJO Generator just Compile and Execute the POJOGenerator class it will generate the Pojo Entities with class and field level annotations in specified path in accordance to the properties of Database tables 
-begin and end method of DataManager class to start and stop the Database Connection of Specified Information of Conf.json file
-save update and delete method of DataManager class for push and pull operation of Data from SQL server which covers the Data Layer logics of specified Pojo Entity
-Sql Select Statement operations using fire method to get desired Records based on particular dependent Entity fields
-Framework manages the CRUD operations and select query with where clause by just calling mentioned method and get Job done.
+* POJO Generator just Compile and Execute the POJOGenerator class it will generate the Pojo Entities with class and field level annotations in specified path in accordance to the properties of Database tables 
+* begin and end method of DataManager class to start and stop the Database Connection of Specified Information of Conf.json file
+* save update and delete method of DataManager class for push and pull operation of Data from SQL server which covers the Data Layer logics of specified Pojo Entity
+* Sql Select Statement operations using fire method to get desired Records based on particular dependent Entity fields
+* Framework manages the CRUD operations and select query with where clause by just calling mentioned method and get Job done.
